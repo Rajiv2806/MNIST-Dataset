@@ -1,0 +1,296 @@
+---
+title: "MNIST - kNN / Parzen window"
+author: "Rajiv"
+date: "11 August 2017"
+output: html_document
+---
+
+#kNN & Parzen window classifier on MNIST Dataset
+
+MNIST dataset is a dataset of images on hand written digits from 0-9. Each Image is 28 X 28 pixel image. For More information on MNIST visit <http://yann.lecun.com/exdb/mnist/>
+There are around 60,000 total training observations of all the classes and 10,000 testing observations.Each Observation has 784 (28X28) pixels.
+
+In this exercise we are loading the MNIST Training and Test dataset's which are reduced by Principle components(PCA) and Linear discriminants(LDA) from 784 features to 9 features each and we apply knn and parzen window classifier on these dataset and calculate the accuracy and pick the best classifier.
+
+Training & Test Data set's:
+D1 - Principle components
+D2 - Linear discriminants
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+
+**Loading Dataset**
+
+Loading the data directly from the rdata file, which contains csv files for MNIST PCA reduced Training and Testing along with LDA reduced Training and Testing datasets.
+
+the below "D1_n_D2.rdata" file can be found at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/D1_n_D2.rdata> 
+
+```{r LoadData, message=FALSE, warning=FALSE}
+rm(list=ls())
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+load("D1_n_D2.rdata")
+```
+
+A look into the structure of data
+```{r}
+head(D1_PCA_Train,2)
+head(D1_PCA_Test,2)
+head(D2_LDA_Train,2)
+head(D2_LDA_Test,2)
+```
+
+
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
+
+# K-nn Classifier on PCA 
+
+In the below code we are applying the K-nn classifier on the PCA Training dataset for different values of K ranging from 1-17 and then we calculate the training and testing set accuracy's for compare them for different values of K.
+
+** CAUTION: Below codw will take atleast 15-20 min to execute depending on your computer configuration**
+
+You can uncomment the below code to run the K-nn classifier Model. In this exercise i am skipping the code and loading the rdata file which i saved in my previous runs for faster execution. The file can be found at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/pca_Knn_Classifier.rdata>. You can also reduce the time if you want to run only for few values of K.
+
+
+```{r PCA_KnnClassifier, message=F, warning=F}
+t1 = Sys.time()
+library(class)
+
+#kvalues <- c(1,3,5,7,9,11,13,15,17)
+
+#accuracy_train <- c()
+#accuracy_test <- c()
+    
+#for(k in kvalues){
+#    knn_classifier <- knn(train = D1_PCA_Train[,-10],test = D1_PCA_Train[,-10],cl = D1_PCA_Train[,10], k = k)
+#    accuracy_train[k] <- round(sum(diag(table(knn_classifier,D1_PCA_Train[,10])))/nrow(D1_PCA_Train) * 100,2)}
+
+#for(k in kvalues){
+#    knn_classifier <- knn(train = D1_PCA_Train[,-10],test = D1_PCA_Test[,-10],cl = D1_PCA_Train[,10], k = k)
+#    accuracy_test[k] <- round(sum(diag(table(knn_classifier,D1_PCA_Test[,10])))/nrow(D1_PCA_Test) * 100,2)}
+
+#accuracy_train <- na.omit(accuracy_train)
+#accuracy_test <- na.omit(accuracy_test)
+
+#pca_Knn_Classifier <- cbind.data.frame(kvalues,accuracy_train,accuracy_test)
+
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#save(pca_Knn_Classifier,file = "pca_Knn_Classifier.rdata")
+load("pca_Knn_Classifier.rdata")
+
+pca_Knn_Classifier
+
+Sys.time() - t1
+```
+
+
+Vizualization of accuracy for various values of K for training and testing datasets for PCA K-nn Classifier.
+
+```{r PCA_AccuracyPlot,message=F,warning=F}
+library(ggplot2)
+ggplot(pca_Knn_Classifier,aes(kvalues)) + geom_line(aes(y = accuracy_test),colour = "red") + geom_line(aes(y = accuracy_train),colour = "blue") + ggtitle("MNIST Dataset - PCA Projection \n K-nn Classifier \n Training Accuracy Vs Test Accuracy") + ylab("Accuracy")
+```
+
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+# K-nn Classifier on FisherLDA 
+
+In the below code we are applying the K-nn classifier on the LDA Training dataset for different values of K ranging from 1-17 and then we calculate the training and testing set accuracy's for compare them for different values of K.
+
+** CAUTION: Below codw will take atleast 15-20 min to execute depending on your computer configuration**
+
+You can uncomment the below code to run the K-nn classifier Model. In this exercise i am skipping the code and loading the rdata file which i saved in my previous runs for faster execution. The file can be found at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/lda_Knn_Classifier.rdata>. You can also reduce the time if you want to run only for few values of K. 
+
+```{r LDA_KnnClassifier,message=F,warning=F}
+t1 = Sys.time()
+
+#kvalues <- c(1,3,5,7,9,11,13,15,17)
+
+#accuracy_train <- c()
+#accuracy_test <- c()
+
+#for(k in kvalues){
+#    knn_classifier <- knn(train = D2_LDA_Train[,-10],test = D2_LDA_Train[,-10],cl = D2_LDA_Train[,10], k = k)
+#    accuracy_train[k] <- round(sum(diag(table(knn_classifier,D2_LDA_Train[,10])))/nrow(D2_LDA_Train) * 100,2)}
+
+#for(k in kvalues){
+#    knn_classifier <- knn(train = D2_LDA_Train[,-10],test = D2_LDA_Test[,-10],cl = D2_LDA_Train[,10], k = k)
+#    accuracy_test[k] <- round(sum(diag(table(knn_classifier,D2_LDA_Test[,10])))/nrow(D2_LDA_Test) * 100,2)}
+
+#accuracy_train <- na.omit(accuracy_train)
+#accuracy_test <- na.omit(accuracy_test)
+
+#lda_Knn_Classifier <- cbind.data.frame(kvalues,accuracy_train,accuracy_test)
+
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#save(lda_Knn_Classifier,file = "lda_Knn_Classifier.rdata")
+load("lda_Knn_Classifier.rdata")
+
+lda_Knn_Classifier
+
+Sys.time() - t1
+rm(t1)
+```
+
+
+Vizualization of accuracy for various values of K for training and testing datasets for LDA K-nn Classifier.
+
+```{r LDA_AccuracyPlot,message=F,warning=F}
+ggplot(lda_Knn_Classifier,aes(kvalues)) + 
+    geom_line(aes(y = accuracy_test,colour = "Testing_Accuracy")) + 
+    geom_line(aes(y = accuracy_train,colour = "Training_Accuracy")) + 
+    ggtitle("MNIST Dataset - LDA Projection \n K-nn Classifier \n Training Accuracy Vs Test Accuracy") +  ylab("Accuracy")
+```
+
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+# Parzen Window on PCA
+
+In the below code we are applying the Parzen window classifier on the LDA Training dataset for different values of Sigma ranging from 0.1-3.0 and then we calculate the training and testing set accuracy's for compare them for different values of sigma.
+
+** CAUTION: Below codw will take atleast 30-40 min to execute depending on your computer configuration**
+
+You can uncomment the below code to run the Parzen classifier Model. In this exercise i am skipping the code and loading the rdata file which i saved in my previous runs for faster execution. The file can be found at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/pca_parzenClassifier.rdata>. You can also reduce the time if you want to run only for few values of sigma. 
+
+```{r ParzenPCA, message=FALSE, warning=FALSE}
+library(KernelKnn)
+
+t1 = Sys.time()
+
+#sigmavals <- c(10,20,30)
+
+#accuracy_train <- c()
+#accuracy_test <- c()
+
+#for(i in sigmavals){
+
+#        sigma <- i/10
+#        pca_parzen_train <- KernelKnn(D1_PCA_Train[,1:9],TEST_data = D1_PCA_Train[,1:9],y = as.numeric(D1_PCA_Train[,10]),method = 'euclidean',weights_function = 'gaussian',regression = F,h= sigma, Levels = c(1,2,3,4,5,6,7,8,9,10))
+
+#        a1 <- max.col(pca_parzen_train,ties.method = "random")
+#        accuracy_train[i] <- sum(diag(table(a1,D1_PCA_Train[,10])))/nrow(D1_PCA_Train) 
+
+#        pca_parzen_test <- KernelKnn(D1_PCA_Train[,1:9],TEST_data = D1_PCA_Test[,1:9],y = as.numeric(D1_PCA_Train[,10]),method = 'euclidean',weights_function = 'gaussian',regression = F,h = i/10, Levels = c(1,2,3,4,5,6,7,8,9,10))
+
+#        a2 <- max.col(pca_parzen_test,ties.method = "random")
+#        accuracy_test[i] <- sum(diag(table(a2,D1_PCA_Test[,10])))/nrow(D1_PCA_Test) 
+#}
+
+#pca_parzen_Classifier <- cbind.data.frame(sigma = sigmavals/10,accuracy_train,accuracy_test)
+#pca_parzen_Classifier <- na.omit(pca_parzen_Classifier)
+
+#rm(a1,a2,sigma,accuracy_test,accuracy_train,pca_Parzen_test,pca_parzen_train,sigmavals)
+
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#save(pca_parzen_Classifier,file = "pca_parzenClassifier.rdata")
+load("pca_parzenClassifier.rdata")
+
+Sys.time() - t1
+```
+
+Vizualization of accuracy for various values of sigma for training and testing datasets for PCA parzen window Classifier.
+
+```{r PCA_Parzen_AccuracyPlot,message=F,warning=F}
+ggplot(pca_parzen_Classifier,aes(sigma)) + 
+    geom_line(aes(y = accuracy_test,colour = "Testing_Accuracy")) + 
+    geom_line(aes(y = accuracy_train,colour = "Training_Accuracy")) + 
+    ggtitle("MNIST Dataset - PCA Projection \n Parzen window Classifier \n Training Accuracy Vs Test Accuracy") +  ylab("Accuracy")
+```
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+# Parzen Window on LDA
+
+In the below code we are applying the Parzen window classifier on the LDA Training dataset for different values of Sigma ranging from 0.1-3.0 and then we calculate the training and testing set accuracy's for compare them for different values of sigma.
+
+** CAUTION: Below codw will take atleast 30-40 min to execute depending on your computer configuration**
+
+You can uncomment the below code to run the Parzen classifier Model. In this exercise i am skipping the code and loading the rdata file which i saved in my previous runs for faster execution. The file can be found at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/lda_parzenClassifier.rdata>. You can also reduce the time if you want to run only for few values of sigma. 
+
+```{r ParzenLDA, message=FALSE, warning=FALSE}
+library(KernelKnn)
+
+t1 = Sys.time()
+
+#sigmavals <- c(10,20,30)
+
+#accuracy_train <- c()
+#accuracy_test <- c()
+
+#for(i in sigmavals){
+#        sigma <- i/10
+#        lda_parzen_train <- KernelKnn(D2_LDA_Train[,1:9],TEST_data = D2_LDA_Train[,1:9],y = as.numeric(D2_LDA_Train[,10]),method = 'euclidean',weights_function = 'gaussian',regression = F,h= sigma, Levels = c(1,2,3,4,5,6,7,8,9,10))
+
+#        a1 <- max.col(lda_parzen_train,ties.method = "random")
+#        accuracy_train[i] <- sum(diag(table(a1,D2_LDA_Train[,10])))/nrow(D2_LDA_Train) 
+
+#        lda_parzen_test <- KernelKnn(D2_LDA_Train[,1:9],TEST_data = D2_LDA_Test[,1:9],y = as.numeric(D2_LDA_Train[,10]),method = 'euclidean',weights_function = 'gaussian',regression = F,h = i/10, Levels = c(1,2,3,4,5,6,7,8,9,10))
+
+#        a2 <- max.col(lda_parzen_test,ties.method = "random")
+#        accuracy_test[i] <- sum(diag(table(a2,D2_LDA_Test[,10])))/nrow(D2_LDA_Test) 
+        
+#}
+
+#lda_parzen_Classifier <- cbind.data.frame(sigma,accuracy_train,accuracy_test)
+#lda_parzen_Classifier <- na.omit(pca_parzen_Classifier)
+
+#rm(a1,a2,sigma,accuracy_test,accuracy_train,lda_Parzen_test,lda_parzen_train)
+
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#save(lda_parzen_Classifier,file = "lda_parzenClassifier.rdata")
+load("lda_parzenClassifier.rdata")
+
+Sys.time() - t1
+```
+
+Vizualization of accuracy for various values of sigma for training and testing datasets for LDA parzen window Classifier.
+
+```{r LDA_Parzen_AccuracyPlot,message=F,warning=F}
+ggplot(lda_parzen_Classifier,aes(sigma)) + 
+    geom_line(aes(y = accuracy_test,colour = "Testing_Accuracy")) + 
+    geom_line(aes(y = accuracy_train,colour = "Training_Accuracy")) + 
+    ggtitle("MNIST Dataset - LDA Projection \n Parzen window Classifier \n Training Accuracy Vs Test Accuracy") +  ylab("Accuracy")
+```
+
+
+# Questions to answer
+
+What's the test accuracy on PCA for k = 7 for kNN classifier? 
+What's the test accuracy on LDA for k = 7 for kNN classifier? 
+What's the test accuracy on PCA for sigma = 1 for Parzen Window classifier? 
+What's the test accuracy on LDA for sigma = 1 for Parzen Window classifier? 
+
+```{r, message=FALSE, warning=FALSE}
+library(sqldf)
+
+paste("test accuracy on PCA for k = 7 for kNN classifier: ",sqldf("select accuracy_test from pca_Knn_Classifier where kvalues = 7"))
+
+paste("test accuracy on LDA for k = 7 for kNN classifier: ",sqldf("select accuracy_test from lda_Knn_Classifier where kvalues = 7"))
+
+paste("test accuracy on PCA for sigma = 1 for Parzen classifier: ",sqldf("select accuracy_test*100 from pca_parzen_Classifier where sigma = 1"))
+
+paste("test accuracy on PCA for k = 7 for kNN classifier: ",sqldf("select accuracy_test*100 from lda_parzen_Classifier where sigma = 1"))
+```
+
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+As a conclusion we can say that on the MNIST Dataset reduced into 9 dimensions by PCA and LDA techniques, and applying K-nn and Parzen window techniques to classify the digits 0-9 we got highest accuracy of 82.51% on test dataset on K-nn Classifier for K = 11 on the LDA discriminants. 
+The Parzen window classifier has lower test accuracies than the K-nn classifier in this case.
+
+In case of K-nn on PCA, the training accuracies were consistingly decreasing and were stable after some value of K where as the test dataset accuracy kept increasing for initial values ok K and then became stable. FOr the LDA training accuracy has dropped significantly in the initial values and them became smoother, for the test dataset, the accuracies increased for initial values of K and then the accuracies stabilized.
+
+In case of parzen window classifier on PCA & LDA, the training accuracies were almost the same and the test accuracies too. as the values of sigma keeps increasing there is a a slight decimal increase in accuracy of model.
+
