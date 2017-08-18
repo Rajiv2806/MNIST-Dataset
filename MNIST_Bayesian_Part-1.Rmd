@@ -1,0 +1,338 @@
+---
+title: "MNIST - Bayesian Part-1"
+author: "Rajiv"
+date: "09 August 2017"
+output: html_document
+---
+
+# Bayesian Classifier on MNIST Dataset after applying PCA and LDA
+
+MNIST dataset is a dataset of images on hand written digits from 0-9. Each Image is 28 X 28 pixel image. For More information on MNIST visit <http://yann.lecun.com/exdb/mnist/>
+There are around 60,000 total training observations of all the classes and 10,000 testing observations.Each Observation has 784 (28X28) pixels.
+
+In this exercise we will build a Bayesian classifier on the dataset on check the accuracy of the model on training and testing datasets. 
+
+In order to apply Bayes classifier on the MNIST Dataset, as the number of features / dimensions are very high (784 features) it is going to take a lot of computational power and time to execute. so, in order to handle this, we reduce the 784 dimensions to 9 dimensions using the popular dimensionality reduction techniques: PCA and LDA. After reducing the whole dataset to 9 dimensions we then apply the Bayesian classifier to predict the class label.
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+#Loading MNIST data
+
+The MNIST Dataset has a test file and training file for each digit (0-9). so we have 10 training and 10 testing files.
+
+After downloading the training and testing dataset for all the digits with 784 features for each observation, we combine all of them into one single file for training and one for testing.
+
+The next few code chunks will do the above process step by step and makes a test and train dataframe.
+
+**NOTE: I have already run the code and stored the dataframes into an 'rdata' file. so next time when i am running i will dorectly load the 'rdata' file instead of reading all the files one by one and appending them.**
+
+**If you want to load your own dataset then ignore the below code chunk and run the following ones.**
+
+
+```{r ClearWorkSpace, message=FALSE, warning=FALSE}
+#rm(list=ls())
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST") #set your working dir
+load("MNIST.rdata")
+```
+The url for the above 'MNIST.rdata' file can be found on my Git account at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/MNIST.rdata>
+
+### CAUTION : Use the below 5 code chucks only if necessary by uncommenting
+
+*The Below Chuck*
+In Markdown you need to set the working directory (WD) for each chunk you run. When the execution comes out of the chunk, the default WD is set. Or else you can overcode this by setting up you default WD to your file path or load all the files to your default WD
+
+reading all the file names of training and testing files seperately into two variables.
+```{r, message=FALSE, warning=FALSE}
+#setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#Training_files <- dir(pattern = "train")
+#Testing_files <- dir(pattern = "test")
+```
+
+*The below Chuck*
+Reading all the training files and making them into a single dataframe and combining the class lables to each observation
+```{r, message=FALSE, warning=FALSE}
+#setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+
+#class_n <- c()
+#for(i in 0:9){
+#        assign(paste0( "train",i),read.csv(Training_files[i+1]))
+#        class_n <- c(class_n,nrow(read.csv(Training_files[i+1])))
+#        }
+#rm(i,Training_files)
+
+#train0 <- train0[,-c(1)]
+#train1 <- train1[,-c(1)]
+#train2 <- train2[,-c(1)]
+#train3 <- train3[,-c(1)]
+#train4 <- train4[,-c(1)]
+#train5 <- train5[,-c(1)]
+#train6 <- train6[,-c(1)]
+#train7 <- train7[,-c(1)]
+#train8 <- train8[,-c(1)]
+#train9 <- train9[,-c(1)]
+
+#MNIST_Train <- rbind(train0,train1,train2,train3,train4,train5,train6,train7,train8,train9)
+
+#rm(train0,train1,train2,train3,train4,train5,train6,train7,train8,train9)
+
+#MNIST <- c()
+#for(i in 0:9){
+#MNIST <- c(MNIST,rep(i,class_n[i+1]))
+#}
+#rm(class_n,i)
+
+#MNIST_Train <- cbind(MNIST_Train,MNIST)
+#rm(MNIST)
+
+#MNIST_Train$MNIST <- as.factor(MNIST_Train$MNIST)
+```
+
+
+*The below chunk*
+Reading all the testinging files and making them into a single dataframe and combining the class lables to each observation
+```{r, message=FALSE, warning=FALSE}
+#setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+
+#class_n <- c()
+#for(i in 0:9){
+#    assign(paste0( "test",i),read.csv(Testing_files[i+1]))
+#    class_n <- c(class_n,nrow(read.csv(Testing_files[i+1])))
+#}
+#rm(i,Testing_files)
+
+#test0 <- test0[,-c(1)]
+#test1 <- test1[,-c(1)]
+#test2 <- test2[,-c(1)]
+#test3 <- test3[,-c(1)]
+#test4 <- test4[,-c(1)]
+#test5 <- test5[,-c(1)]
+#test6 <- test6[,-c(1)]
+#test7 <- test7[,-c(1)]
+#test8 <- test8[,-c(1)]
+#test9 <- test9[,-c(1)]
+
+#MNIST_Test <- rbind(test0,test1,test2,test3,test4,test5,test6,test7,test8,test9)
+
+#rm(test0,test1,test2,test3,test4,test5,test6,test7,test8,test9)
+
+#MNIST <- c()
+#for(i in 0:9){
+#    MNIST <- c(MNIST,rep(i,class_n[i+1]))
+#}
+#rm(class_n,i)
+
+#MNIST_Test <- cbind(MNIST_Test,MNIST)
+#rm(MNIST)
+
+#MNIST_Test$MNIST <- as.factor(MNIST_Test$MNIST)
+```
+
+*In below chunk*
+Saving the MNIST_Train and MNIST_Test into a 'rdata' file called MNIST so as we can dierctly load this (as done in the first code chunk) file by skipping the above process.
+
+```{r, message=FALSE, warning=FALSE}
+#setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#save(MNIST_Train,MNIST_Test, file = "MNIST.rdata")
+```
+
+*In Below Chunk*
+Writing the MNIST_Train and MNIST_Test into respective CSV files.
+If you dont like using 'rdata' files, you can use below csv files to load data into ypur program.
+
+```{r, message=FALSE, warning=FALSE}
+#setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+#write.csv(MNIST_Train,"MNIST_Train.csv")
+#write.csv(MNIST_Test,"MNIST_Test.csv")
+```
+
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+
+#Principle Component Analysis (PCA)
+
+**Data PreProcessing before PCA**
+
+Removing null values in the training and test dataset
+
+```{r DataPreProcessing}
+#MNIST_Train[rowSums(is.na(MNIST_Train)) > 0,]
+#MNIST_Test[rowSums(is.na(MNIST_Test)) > 0,]
+MNIST_Train <- na.omit(MNIST_Train)
+MNIST_Test <- na.omit(MNIST_Test)
+```
+
+**Applying PCA on MNIST Training dataset**
+
+Running PCA on this large dataset is vary time consuming process. I have run PCA once using below code and have stored the output object in the rdata file and for the purpose of this exercise, i am loading that object directly into the program.
+
+The amount of variance explained by each Princilple component is shown below.
+
+```{r PCA, message=FALSE, warning=FALSE}
+#D1_PCOMP <-princomp(MNIST_Train[,1:784], cor = F, scores = TRUE, covmat = NULL)
+
+#save(D1_PCOMP,file = "D1_PCOMP.rdata")
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+load("D1_PCOMP.rdata")
+
+#summary(D1_PCOMP); loadings(D1_PCOMP); plot(D1_PCOMP,type="l"); biplot(D1_PCOMP)
+#(D1_PCOMP$loadings[1:10,1:10]); dim(D1_PCOMP$loadings); dim(D1_PCOMP$scores)
+
+plot(D1_PCOMP,type="l")
+```
+
+**The Total variance of the dataset explained by these 9 Principle components**
+
+```{r}
+dummy <- D1_PCOMP$sdev^2 /sum(D1_PCOMP$sdev^2)
+dummy <- cumsum(dummy[1:9])
+
+paste0("Percent of variance explained by 9 Principle Complonents is: ", round((dummy[9] * 100),2),"%")
+
+rm(dummy)
+```
+
+
+**Vizualization of Principle components**
+
+Projecting the entire datset on the first two principle components, colour coded by the Digit as class is shown below.
+
+```{r PCAProjection, message=FALSE, warning=FALSE}
+library(ggfortify)
+
+autoplot(D1_PCOMP,data = MNIST_Train, colour = "MNIST",main = "Principle Component plot of \n MNIST Dataset")
+```
+
+**Creating D1_PCA Training Dataset**
+
+Taking only 9 components of the PCA and calculating the scores matrix of the training dataset.
+
+```{r D1Training, message=FALSE, warning=FALSE}
+D1_PCA_Train <- as.data.frame(D1_PCOMP$scores[,1:9])
+D1_PCA_Train$MNIST <- MNIST_Train$MNIST
+#dim(D1_PCA_Train); head(D1_PCA_Train)
+```
+
+**Creating D1_PCA Test Dataset**
+
+Taking only 9 components of the PCA and calculating the scores matrix of the testing dataset.
+
+```{r D1Testing, message=FALSE, warning=FALSE}
+D1_PCA_Test <- as.matrix(MNIST_Test[,1:784]) %*% D1_PCOMP$loadings
+D1_PCA_Test <- as.data.frame(D1_PCA_Test)
+D1_PCA_Test <- D1_PCA_Test[,1:9]
+D1_PCA_Test$MNIST <- MNIST_Test[,785]
+```
+
+*So, we have performed PCA on the MNIST dataset which consists of 784 dimensions and reduced that to 9 dimensions.*
+
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
+
+#Fisher Linear Discriminant Analysis (LDA)
+
+**Data Preprocessing before LDA**
+
+In order to perform LDA, we need to preprocess the dataset, by removing the columns with zero/constant variance and those with High Correlation.
+
+```{r}
+#Removing the features where variance of the feature is zero.
+MNIST_Train_VarRem <- MNIST_Train[,apply(MNIST_Train,2,var) > 0]
+
+# Correlation Matrix
+corr = cor((MNIST_Train_VarRem[,-703]))
+colnames(corr) = colnames(MNIST_Train_VarRem[,-703])
+
+
+# Identify highly correlated columns, so that we can ignore from our analysis
+list = array()
+for (i in 1:ncol(corr)){
+    for (j in 1:ncol(corr)){
+        if (corr[i,j] > 0.90 & i !=j){
+            list = append(list, colnames(corr)[j])
+            list = unique(list)
+        }
+    }
+}
+
+# Remove the highly correlated columns from training data
+MNIST_Train_CorRem <- MNIST_Train_VarRem[,!names(MNIST_Train_VarRem) %in% list]
+
+# Keeping only those features in the test dataset which are present in training dataset.
+MNIST_Test_CorRem <- MNIST_Test[,names(MNIST_Test) %in% names(MNIST_Train_CorRem)]
+
+rm(i,j,corr,list)
+```
+
+**Applying LDA**
+
+As like PCA, processing LDA on the MNIST Dataset is also time taking process, so the rdata file is loaded directly into the program which was obtained through previous runs.
+
+```{r, message=FALSE, warning=FALSE}
+#Local Fisher Discriminant Analysis (LFDA)
+library(lfda)  
+#lfda1 <- lfda(MNIST_Train_CorRem[,1:688],MNIST_Train_CorRem[,689],r = 9,metric = "plain")
+
+#save(lfda1,file = "MNIST/D2.rdata")
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+load("D2_LDA.rdata")
+
+# The same can be accomplished through the function 'lda' in MASS package or 'self' in lfda 
+#library(MASS)
+#lda1 <- lda(MNIST~.,data = MNIST_Train_CorRem)
+#self1 <- self(MNIST_Train[,1:784],MNIST_Train[,785],metric = "plain",beta = 0,r = 1)
+```
+the above "D2_LDA.rdata" file can be found in the Git account at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/D2.rdata>
+
+
+**Visualizing the classes**
+
+Projecting the entire datset on the first three discriminants, colour coded by the Digit as class is shown below.
+```{r}
+plot(lfda1,MNIST_Train_CorRem[,689],cleanText = T)
+```
+
+
+**Creating LDA train and test datasets**
+
+```{r}
+D2_LDA_Train <- as.data.frame(lfda1$Z)
+D2_LDA_Train$MNIST <- MNIST_Train_CorRem[,ncol(MNIST_Train_CorRem)]
+
+D2_LDA_Test <- as.matrix(MNIST_Test_CorRem[,1:(ncol(MNIST_Train_CorRem)-1)]) %*% lfda1$T
+D2_LDA_Test <- as.data.frame(D2_LDA_Test)
+D2_LDA_Test$MNIST <- MNIST_Test_CorRem[,ncol(MNIST_Train_CorRem)]
+```
+
+Now we also have the 9 LDA Components of the MNIST training and testing Datasets.
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+# Writing to CSV files
+
+Writing the outputs of LDA and PCA to a CSV file. Optional.
+
+```{r}
+#save(D1_PCA_Train,D1_PCA_Test,D2_LDA_Train,D2_LDA_Test,file = "MNIST/D1_n_D2.rdata")
+setwd("D:/ISB/34-DataMining-2/Assignment/MNIST")
+write.csv(D1_PCA_Train ,file = "D1_PCA_train.csv")
+write.csv(D1_PCA_Test ,file = "D1_PCA_test.csv")
+write.csv(D2_LDA_Train ,file = "D2_LDA_train.csv")
+write.csv(D2_LDA_Train ,file = "D2_LDA_test.csv")
+```
+
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+
+# Bayesian Classifier in PYTHON.
+
+Though we have reduced 784 dimensions to 9 dimensions, building a Bayesian classifier Using single gaussian per class on these using the Diagonal Covariance Matrix and the Full covariance matrix is not present in "R" and this process is also very time consuming in R. So, these are done in Python easily. Refer to the file at <https://github.com/Rajiv2806/MNIST-Dataset/blob/master/MNIST%20Bayesian%20Part-2.ipynb>
+
